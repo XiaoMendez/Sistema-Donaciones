@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Iniciar Sesión</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Animate.css -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <!-- Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Fuente -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --color-primary: #5C2483;
+      --color-secondary: #ec4899;
+      --color-white: #ffffff;
+      --color-white-soft: #fafafa;
+      --color-dark: #18181b;
+      --color-gray-2: #e4e4e7;
+      --color-text: #71717a;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--color-white);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 10% 20%, rgba(92, 36, 131, 0.1) 0%, transparent 25%),
+        radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 25%),
+        linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%);
+      opacity: 0.25;
+      z-index: -1;
+      animation: gradientShift 15s ease infinite alternate;
+    }
+
+    @keyframes gradientShift {
+      0% { transform: translate(0%,0%); }
+      50% { transform: translate(-5%,-5%); }
+      100% { transform: translate(0%,0%); }
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 450px;
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, 0.9);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 0.8s ease;
+    }
+
+    .auth-title {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-size: 200% 200%;
+      animation: titleGradient 8s ease infinite;
+    }
+
+    @keyframes titleGradient {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid var(--color-gray-2);
+      border-radius: 8px;
+      background: var(--color-white-soft);
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--color-primary);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(92, 36, 131, 0.3);
+    }
+
+    .form-label {
+      font-size: 0.85rem;
+      margin-bottom: 0.3rem;
+      display: block;
+      color: var(--color-text);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      border: none;
+      padding: 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      width: 100%;
+      color: white;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 8px 20px rgba(92, 36, 131, 0.4);
+    }
+
+    .auth-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      color: var(--color-text);
+      font-size: 0.9rem;
+    }
+
+    .auth-link a {
+      color: var(--color-primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .auth-link a:hover {
+      color: var(--color-secondary);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-container">
+    <div class="auth-card animate__animated animate__fadeIn">
+      <h1 class="auth-title">Iniciar Sesión</h1>
+
+      <form id="formLogin" class="auth-form">
+        <div class="form-group">
+          <label for="logEmail" class="form-label">Correo electrónico</label>
+          <input id="logEmail" name="email" type="email" class="form-input" placeholder="ejemplo@correo.com" required autocomplete="email">
+        </div>
+
+        <div class="form-group">
+          <label for="logClave" class="form-label">Contraseña</label>
+          <input id="logClave" name="password" type="password" class="form-input" placeholder="********" required autocomplete="current-password">
+        </div>
+
+        <button type="submit" class="btn-primary">Entrar</button>
+      </form>
+
+      <p class="auth-link">¿No tienes cuenta? <a href="register.html">Regístrate aquí</a></p>
+    </div>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.getElementById("formLogin").addEventListener("submit", e => Auth.login(e));
+  </script>
+</body>
+</html>

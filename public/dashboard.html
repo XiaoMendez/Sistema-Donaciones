@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Proza+Libre&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: 'Proza Libre', sans-serif; background:#f5f5f5; }
+.navbar { background: linear-gradient(90deg, #9155f1, #9333ea); }
+.navbar-brand, .nav-link { color: #fff !important; font-weight: 500; }
+.nav-link:hover { color: #d1c4f9 !important; }
+.btn-morado { background: linear-gradient(90deg, #6d28d9, #9333ea); color:white; border:none; transition: all 0.3s ease; }
+.btn-morado:hover { background: linear-gradient(90deg, #5b21b6, #7e22ce); transform: translateY(-2px); }
+.card { box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius:12px; transition: transform 0.3s ease; }
+.card:hover { transform: translateY(-4px); }
+.campaigns-container { display:flex; overflow-x:auto; gap:1rem; padding-bottom:1rem; }
+.campaign-card { min-width:220px; flex-shrink:0; transition: transform 0.3s ease; }
+.campaign-card:hover { transform: scale(1.03); }
+.campaign-card img { height:120px; object-fit:cover; width:100%; border-radius:8px; }
+.progress { height:8px; border-radius:4px; }
+.chart-container { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+.chart-card { flex:1; min-width:250px; max-width:400px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+.motivational { 
+  color: #6b21a8; 
+  transition: opacity 0.6s ease-in-out; 
+  font-size: 1.3rem; 
+  font-weight:600;
+}
+.text-purple { color:#9333ea; }
+</style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="dashboard.html">Sistema de Donaciones</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav align-items-center">
+        <li class="nav-item"><a class="nav-link" href="dashboard.html">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link active" href="campaigns.html">Campañas</a></li>
+        <li class="nav-item"><a class="nav-link" href="donations.html">Donaciones</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">Usuario</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#" onclick="Auth.logout()">Cerrar sesión</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main class="container my-4">
+
+  <!-- Estadísticas -->
+  <section class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card p-3 text-center"><h4 id="statCampaigns">0</h4><p class="text-muted">Campañas activas</p></div></div>
+    <div class="col-md-4"><div class="card p-3 text-center"><h4 id="statDonations">0</h4><p class="text-muted">Donaciones realizadas</p></div></div>
+    <div class="col-md-4"><div class="card p-3 text-center"><h4 id="statTopDonors"></h4><p id="motivationalText" class="motivational mb-3"></p></div></div>
+  </section>
+
+  <!-- Buscador -->
+  <section class="mb-4">
+    <div class="d-flex gap-2 mb-3">
+      <input type="text" id="searchInput" class="form-control" placeholder="Buscar campaña">
+      <button class="btn btn-morado" onclick="loadCampaigns()">Buscar</button>
+    </div>
+    <div id="campaignsContainer" class="campaigns-container"></div>
+  </section>
+
+  <!-- Gráficos y sección central animada -->
+  <section class="chart-container mb-4">
+
+    <div class="card p-3 chart-card">
+      <h6 class="mb-2">Campañas que han recibido donaciones</h6>
+      <canvas id="receivedChart" height="150"></canvas>
+    </div>
+
+    <div class="card p-3 chart-card" style="min-height:250px;">
+      <!-- Frases motivacionales arriba -->
+      <p style="opacity:0"; id="motivationalText" class="motivational mb-3"></p>
+
+      <!-- Corazón animado SVG -->
+      <svg id="heartSvg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21C12 21 5 14.7 5 9.5C5 7.01 7.01 5 9.5 5C11.04 5 12 6.46 12 6.46C12 6.46 12.96 5 14.5 5C16.99 5 19 7.01 19 9.5C19 14.7 12 21 12 21Z"/>
+      </svg>
+
+      <!-- Texto debajo -->
+      <p class="mt-3 fw-bold text-purple">Gráficos</p>
+    </div>
+
+    <div class="card p-3 chart-card">
+      <h6 class="mb-2">Campañas con meta cumplida</h6>
+      <canvas id="completedChart" height="150"></canvas>
+    </div>
+
+  </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+let receivedChartInstance = null;
+let completedChartInstance = null;
+
+// 🔹 Frases motivacionales
+const motivationalPhrases = [
+  "Cada donación cuenta. Gracias por hacer la diferencia ❤️",
+  "Tu aporte cambia vidas cada día 💜",
+  "Juntos podemos lograr más 🌟",
+  "La solidaridad nos une 💫",
+  "Haz la diferencia, dona con el corazón 💖",
+  "Un pequeño gesto puede cambiar un mundo 🌍",
+  "Dona hoy, inspira esperanza mañana ✨",
+  "La generosidad es el lenguaje universal 💌",
+  "Cada contribución suma, cada sonrisa importa 😊",
+  "Actúa con amor, dona con alegría 💜",
+  "Transforma vidas con tu apoyo 💫",
+  "El poder de ayudar está en tus manos 🤲",
+  "Pequeños actos de bondad crean grandes cambios 🌟",
+  "Dona y sé parte de la historia de alguien 💖",
+  "Solidaridad: un regalo que nunca se olvida 🎁",
+  "Tu generosidad ilumina caminos 🌈"
+];
+let phraseIndex = 0;
+const phraseEl = document.getElementById('motivationalText');
+
+function showNextPhrase() {
+  phraseEl.style.opacity = 0;
+  setTimeout(() => {
+    phraseEl.textContent = motivationalPhrases[phraseIndex];
+    phraseIndex = (phraseIndex + 1) % motivationalPhrases.length;
+    phraseEl.style.opacity = 1;
+  }, 600);
+}
+showNextPhrase();
+setInterval(showNextPhrase, 4000);
+
+// 🔹 Animación del corazón
+const heartSvg = document.getElementById('heartSvg');
+let scale = 1;
+let growing = true;
+setInterval(() => {
+  if (growing) {
+    scale += 0.02;
+    if (scale >= 1.2) growing = false;
+  } else {
+    scale -= 0.02;
+    if (scale <= 1) growing = true;
+  }
+  heartSvg.style.transform = `scale(${scale})`;
+}, 50);
+
+// 🔹 Cargar estadísticas
+async function loadStats() {
+  try {
+    const stats = await apiFetch('/dashboard/stats');
+    document.getElementById('statCampaigns').textContent = stats.activeCampaigns ?? 0;
+    document.getElementById('statDonations').textContent = stats.totalDonations ?? 0;
+    document.getElementById('statTopDonors').textContent = '-'; // eliminamos top donadores
+  } catch(err){
+    console.error("Error loadStats:", err);
+    UI.error(err.message || 'Error al cargar estadísticas');
+  }
+}
+
+// 🔹 Cargar campañas y gráficos
+async function loadCampaigns() {
+  const query = document.getElementById('searchInput').value.trim().toLowerCase();
+  try {
+    const campaigns = await apiFetch(`/dashboard/campaignProgress`);
+    const container = document.getElementById('campaignsContainer');
+
+    const filtered = query 
+      ? campaigns.filter(c =>
+          c.titulo.toLowerCase().includes(query) ||
+          c.descripcion.toLowerCase().includes(query)
+        )
+      : campaigns;
+
+    if (!filtered.length) {
+      container.innerHTML = "<p>No hay campañas activas</p>";
+      return;
+    }
+
+    container.innerHTML = filtered.map(c => `
+      <div class="card p-2 campaign-card">
+        ${c.imagenUrl ? `<img src="${c.imagenUrl}" alt="${c.titulo}">` : ''}
+        <h6>${c.titulo}</h6>
+        <p class="text-muted" style="font-size:0.8rem">${c.descripcion}</p>
+        <p class="mb-0"><strong>Meta:</strong> $${c.meta}</p>
+        <p class="mb-0"><strong>Recaudado:</strong> $${c.recaudado || 0}</p>
+        <p class="mb-0"><strong>Estado:</strong> ${c.metaCumplida ? 'Cumplida' : 'En progreso'}</p>
+        <div class="progress mt-1">
+          <div class="progress-bar bg-success" role="progressbar" style="width:${c.meta > 0 ? Math.min(100,(c.recaudado/c.meta)*100) : 0}%"></div>
+        </div>
+      </div>
+    `).join('');
+
+    const receivedCount = filtered.filter(c => c.haRecibido).length;
+    const completedCount = filtered.filter(c => c.metaCumplida).length;
+
+    if (receivedChartInstance) receivedChartInstance.destroy();
+    if (completedChartInstance) completedChartInstance.destroy();
+
+    receivedChartInstance = new Chart(document.getElementById('receivedChart').getContext('2d'), {
+      type: 'doughnut',
+      data: { 
+        labels:['Ha recibido','No ha recibido'], 
+        datasets:[{ data:[receivedCount, filtered.length - receivedCount], backgroundColor:['#9333ea','#c084fc'] }] 
+      }
+    });
+
+    completedChartInstance = new Chart(document.getElementById('completedChart').getContext('2d'), {
+      type: 'doughnut',
+      data: { 
+        labels:['Meta cumplida','Meta no cumplida'], 
+        datasets:[{ data:[completedCount, filtered.length - completedCount], backgroundColor:['#16a34a','#facc15'] }] 
+      }
+    });
+
+  } catch(err){
+    console.error("Error loadCampaigns:", err);
+    UI.error(err.message || 'Error al cargar campañas');
+  }
+}
+
+// 🔹 Inicialización
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadStats();
+  loadCampaigns();
+});
+</script>
+
+</body>
+</html>
